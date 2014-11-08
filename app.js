@@ -5,9 +5,12 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var expressJwt = require('express-jwt');
 
-var routes = require('./routes/index');
+//var routes = require('./routes/index');
 var users = require('./routes/users');
+var groups = require('./routes/groups');
+var messages = require('./routes/messages');
 
 var app = express();
 
@@ -18,8 +21,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use('/', routes);
-app.use('/users', users);
+var secret = process.env.SECRET || 'secret-shhh-12345';
+app.use('/auth', expressJwt({secret: secret}));
+
+app.use('/', users);
+app.use('/', groups);
+app.use('/', messages);
 
 //// catch 404 and forward to error handler
 //app.use(function(req, res, next) {
