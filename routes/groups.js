@@ -14,17 +14,50 @@ var GroupSchema = new Schema({
     messages: [ObjectId]
 });
 
-var ItemSchema = new Schema({
-    title: String,
-    icon: String,
-    chevin: String
-});
-
 var Group = mongoose.model('Group', GroupSchema);
-var Item = mongoose.model('Item', ItemSchema);
+var Item = require('../models/item');
+
+var defaultItems = [
+    new Item({
+        title: 'Beer',
+        icon: 'beer.svg'
+    }),
+    new Item({
+        title: 'Toilet Paper',
+        icon: 'tp.svg'
+    }),
+    new Item({
+        title: 'Trees',
+        icon: 'trees.svg'
+    })];
 
 router.post('/auth/groups/create', function(req, res) {
-    res.status(200).end();
+    console.log("Creating new group.");
+   
+    var newGroup = new Group({
+        users: req.users, 
+        name: req.name,
+        items: defaultItems,
+     });
+    newGroup.validate(function (err) {
+        if(err) {
+            console.log(err);
+        }
+    });
+
+    newGroup.save(function(err) {
+        if(err) {
+            console.log(err);
+            return res.status(500).json("Internal Server Error");
+        }
+        var returnGroup = {
+
+        };
+
+
+        return res.status(200).json(newGroup);
+    });
+    
 });
 
 router.put('/auth/groups/:id/add_user/:username', function(req, res) {
