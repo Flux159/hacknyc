@@ -7,14 +7,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
-var GroupSchema = new Schema({
-    users: [String],
-    name: String,
-    items: [ObjectId],
-    messages: [ObjectId]
-});
-
-var Group = mongoose.model('Group', GroupSchema);
+var Group = require('../models/group');
 var Item = require('../models/item');
 
 var defaultItems = [
