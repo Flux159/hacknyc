@@ -10,7 +10,7 @@ router.post('/auth/messages', function(req, res) {
     item = req.body.item,
     group = req.body.group;
 
-  if(messageType === null || messageType === undefined || !(message == 'ASK' || message == 'PROMISE')) {
+  if(messageType === null || messageType === undefined || !(messageType == 'ASK' || messageType == 'PROMISE')) {
     return res.status(500).json("Must supply message_type");
   }
 
@@ -23,9 +23,12 @@ router.post('/auth/messages', function(req, res) {
   }
 
   var message = new Message(messageType, username, item, group, new Date());
-  message.save();
-
-  res.status(200).end();
+  message.save(fucntion(err){
+    if(err){
+      return res.status(500).json("Failed to save message");
+    }
+    return res.status(200).end();
+  });
 });
 
 module.exports = router;
