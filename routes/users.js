@@ -3,35 +3,147 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+var User = require('../models/user');
 
-var Schema = mongoose.Schema;
-var ObjectId = mongoose.Schema.Types.ObjectId;
+var jwt = require('jsonwebtoken');
+var secret = process.env.SECRET || 'secret-shhh-12345';
+var expiry = 60 * 24 * 90; //90 Days
 
-var UserSchema = new Schema({
-    username: {type: String, index: true},
-    fname: String,
-    phone: String,
-    email: String,
-    hashedPassword: String,
-    groups: [ObjectId],
-    recents: [ObjectId]
-});
-
-var User = mongoose.model('User', UserSchema);
+/**
+ * Encrypt password (pbkdf2, bcrypt, scrypt)
+ * @param password
+ * @param salt
+ * @param callback
+ */
+function encryptPassword(password, salt, callback) {
+    if (typeof salt === 'function') {
+        callback = salt;
+        salt = crypto.randomBytes(16).toString('base64');
+    }
+    salt = new Buffer(salt, 'base64');
+    crypto.pbkdf2(password, salt, 1000, 64, function (err, hashedPassword) {
+        if (err) return callback(err, null);
+        callback(null, {salt: salt.toString('base64'), hashedPassword: hashedPassword.toString('base64')});
+    });
+}
 
 router.post('/users/signup', function(req, res) {
 
-    res.status(200).end();
+    //Username must be defined
+    if(req.body.username === null || req.body.username === undefined) {
+        return res.status(500).json("Must supply username");
+    }
+
+    //Password must be defined
+    if(req.body.password === null || req.body.password === undefined) {
+        return res.status(500).json("Must supply password");
+    }
+
+    //Password length must be at least 6 characters
+    if(req.body.password.length < 6) {
+        return res.status(500).json("Password length must be greater than or equal to 6 characters");
+    }
+
+    User.findOne({username: String(req.body.username)}, function(err, user) {
+        if(err) return res.status(500).json("Internal Server Error");
+        if(user) {
+            return res.status(500).json("Username already taken");
+        }
+
+        encryptPassword(String(req.body.password), function(err, encryptedPasswordSalt) {
+
+            var user = new user({username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt});
+
+            user.save(function(err) {
+                if(err) {
+                    console.log(err);
+                    return res.status(500).json("Internal Server Error");
+                }
+
+                var profile = {
+                    username: user.username
+                };
+
+                var token = jwt.sign(profile, secret, {expiresInMinutes: expiry});
+
+                var groups = {};
+
+                var returnUser = {
+                    username: user.username,
+                    groups: groups
+                };
+
+                return res.status(200).json({token: token, user: returnUser});
+            });
+
+        });
+
+    });
 });
 
 router.post('/users/login', function(req, res) {
 
-    res.status(200).end();
+    //Username must be defined
+    if(req.body.username === null || req.body.username === undefined) {
+        return res.status(500).json("Must supply username");
+    }
+
+    //Password must be defined
+    if(req.body.password === null || req.body.password === undefined) {
+        return res.status(500).json("Must supply password");
+    }
+
+    User.findOne({username: req.body.username}, function(err, user) {
+        if(err || !user) {
+            return res.status(500).json("Invalid username or password");
+        }
+
+        encryptPassword(req.body.password, user.salt, function(err, encryptedPasswordSalt) {
+            if(encryptedPasswordSalt.hashedPassword === user.hashed_password) {
+
+                var profile = {
+                    username: user.username
+                };
+
+                var token = jwt.sign(profile, secret, {expiresInMinutes: expiry});
+
+                //TODO: Get groups
+
+                var groups = {};
+
+                var returnUser = {
+                    username: user.username,
+                    groups: groups
+                };
+
+                return res.status(200).json({token: token, user: returnUser});
+            } else {
+                return res.status(500).json("Invalid username or password");
+            }
+        });
+
+    });
+
 });
 
 router.get('/auth/users/:username', function(req, res) {
 
-    res.status(200).end();
+    User.findOne({username: req.user.username}, function(err, user) {
+        if(err || !user) {
+            return res.status(500).json("Internal Server Error");
+        }
+
+        //TODO: Get Groups
+        var groups = {};
+
+        var returnUser = {
+            username: user.username,
+            groups: groups
+        };
+
+        return res.status(200).json({user: returnUser});
+    });
+
 });
 
 /* GET users listing. */

@@ -9,9 +9,10 @@ var UserSchema = new Schema({
     fname: String,
     phone: String,
     email: String,
-    hashedPassword: String,
+    hashed_password: String,
+    salt: String,
     groups: [ObjectId],
     recents: [ObjectId]
 });
 
-mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema);
