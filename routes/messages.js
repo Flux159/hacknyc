@@ -7,13 +7,13 @@ var mongoose = require('mongoose');
 
 
 router.post('/auth/messages', function(req, res) {
-  var messageType = req.body.message_type,
-    username = "foo",//req.body.user.username,
+  var messageType = req.body.type,
+    username = req.user.username,
     item = req.body.item,
     group = req.body.group;
 
   if(messageType === null || messageType === undefined || !(messageType == 'ASK' || messageType == 'PROMISE')) {
-    return res.status(500).json("Must supply message_type");
+    return res.status(500).json("Must supply message type");
   }
 
   if(req.body.item == null || req.body.item === undefined) {
@@ -36,8 +36,15 @@ router.post('/auth/messages', function(req, res) {
     if(err){
       return res.status(500).json("Failed to save message");
     }
-    return res.status(200).end();
-  });
+
+    return res.status(200).json({
+      "type" : message.type,
+      "user" : message.user,
+      "item" : message.item,
+      "group" : message.group,
+      "created_at" : message.created_at,
+      "_id" : message._id});
+    });
 });
 
 module.exports = router;
