@@ -18,14 +18,40 @@ describe('Groups', function () {
         //Clear users before test
         Group.remove({}, function (err) {
             Item.remove({}, function(err) {
-                done();
+
+                request(server).post('/users/signup')
+                    .send({'username': "testing2", 'password': "test123", device_id: '12345'})
+                    .expect('Content-Type', /json/)
+                    .expect(200)
+                    .end(function (err, res) {
+                        assert.ifError(err);
+
+                        token = res.body.token;
+
+                        done();
+                    });
             });
         });
     });
 
     describe('create', function () {
         it('Should create a group successfully', function (done) {
-            done();
+            request(server).post('/auth/groups/create')
+                .set('Authorization', 'Bearer ' + token)
+                .send({'name': 'house'})
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(function(err, res) {
+                    assert.ifError(err);
+
+                    console.log(res.body);
+
+                    done();
+                });
+
+
+
+//            done();
 //            request(server).post('/users/signup')
 //                .send({'username': "testing1", 'password': "test123", device_id: '12345'})
 //                .expect('Content-Type', /json/)
