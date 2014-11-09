@@ -118,7 +118,45 @@ router.get('/auth/groups/:id', function (req, res) {
 });
 
 router.delete('/auth/groups/:id/remove_user/:username', function (req, res) {
-    res.status(200).end();
+    Group.findOne({_id: req.params.id, function(err, group) {
+        if(err) {
+            console.log(err);
+            res.status(500).json("Internal Server Error");
+        }
+        var index = group.users.indexOf(req.params.username);
+        if(index > -1) {
+            group.users.splice(index, 1);
+        }
+        group.save(function(err) {
+            if(err) {
+                console.log(err);
+                res.status(500).json("Internal Server Error");
+            }
+            // Remove group from user.
+            User.findOne({_id: req.params.username}, function(err, user) {
+                if(err) {
+                    console.log(err);
+                    res.status(500).json("Internal Server Error");
+                }
+                var index = user.groups.indexOf(req.params.id);
+                if(index > -1) {
+                    user.groups.splice(index, 1);
+                }
+                user.save(function(err) {
+                    if(err) {
+                        console.log(err);
+                        res.status(500).json("Internal Server Error");
+                    }
+                    helpers.buildGroupJson(group, function(full_group) {
+                        if(!full_group) {
+                            return res.status(500).json("Internal Server Error");
+                        }
+                        return res.status(200).json(helpers.trimGroup(full_group));
+                    });
+                });
+            });
+        });
+    });
 });
 
 module.exports = router;
