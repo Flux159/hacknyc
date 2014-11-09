@@ -59,7 +59,7 @@ router.post('/users/signup', function(req, res) {
 
         encryptPassword(String(req.body.password), function(err, encryptedPasswordSalt) {
 
-            var user = new User({_id: ObjectId(), username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt});
+            var user = new User({_id: ObjectId(), username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt, groups: [], recents: []});
 
             user.save(function(err) {
                 if(err) {
@@ -98,7 +98,7 @@ router.post('/users/login', function(req, res) {
         return res.status(500).json("Must supply password");
     }
 
-    User.findOne({username: req.user.username}, function(err, user) {
+    User.findOne({username: req.body.username}, function(err, user) {
         if(err || !user) {
             return res.status(500).json("Invalid username or password");
         }
