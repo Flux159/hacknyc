@@ -24,7 +24,7 @@ describe('Groups', function () {
     });
 
     describe('create', function () {
-        it('Should register a user successfully', function (done) {
+        it('Should create a group successfully', function (done) {
             done();
 //            request(server).post('/users/signup')
 //                .send({'username': "testing1", 'password': "test123", device_id: '12345'})
