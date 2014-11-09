@@ -1,12 +1,14 @@
 'use strict';
 
+var express = require('express');
+var router = express.Router();
 var Message = require('../models/message');
 var mongoose = require('mongoose');
 
 
 router.post('/auth/messages', function(req, res) {
   var messageType = req.body.message_type,
-    username = req.body.user.username,
+    username = "foo",//req.body.user.username,
     item = req.body.item,
     group = req.body.group;
 
@@ -15,14 +17,21 @@ router.post('/auth/messages', function(req, res) {
   }
 
   if(req.body.item == null || req.body.item === undefined) {
-    return res.status(500).json("Must supply an item");
+    return res.status(500).json("Must supply an item id");
   }
 
   if(req.body.group == null || req.body.group == undefined) {
     return res.status(500).json("Must supply a group id");
   }
 
-  var message = new Message(messageType, username, item, group, new Date());
+  var message = new Message({
+    type: messageType,
+    user: username,
+    item: mongoose.Types.ObjectId(item),
+    group: mongoose.Types.ObjectId(group),
+    created_at: new Date()
+  });
+
   message.save(function (err) {
     if(err){
       return res.status(500).json("Failed to save message");
