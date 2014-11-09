@@ -57,7 +57,8 @@ router.post('/auth/groups/create', function (req, res) {
                 if(!success) {
                     res.status(500).json("Internal Server Error");
                 }
-
+                // Return all item details.
+                newGroup.items = [beer, tp, tree];
                 return res.status(200).json(helpers.trimGroup(newGroup));
 
             });
@@ -83,7 +84,7 @@ router.get('/auth/groups/:id/add_user/:username', function (req, res) {
                     return res.status(500).json("Internal Server Error");
                 }
 
-                return res.status(200).json(helpers.trimGroup(group));
+                return res.status(200).json(helpers.trimGroup(full_group));
 
             });
 
@@ -107,9 +108,13 @@ router.put('/auth/groups/:id/add_item', function (req, res) {
 
 router.get('/auth/groups/:id', function (req, res) {
     Group.findOne({ _id: req.params.id }, function (err, group) {
+        helpers.buildGroupJson(group, function(full_group) {
+            if(!full_group) {
+                res.status(500).json("Internal Server Error");
+            }
+            return res.status(200).json(helpers.trimGroup(full_group));
+        });
     });
-
-    res.status(200).end();
 });
 
 router.delete('/auth/groups/:id/remove_user/:username', function (req, res) {
