@@ -14,7 +14,8 @@ var messages = require('./routes/messages');
 
 var app = express();
 
-mongoose.connect('mongodb://localhost/igotthis');
+var connection = process.env.MONGOLAB_URI || 'mongodb://localhost/igotthis';
+mongoose.connect(connection);
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -61,7 +62,9 @@ app.use('/', messages);
 
 module.exports = app;
 
+var port = process.env.PORT || 9000;
+
 //Start server
-app.listen(9000, function() {
+app.listen(port, function() {
     console.log("Express server listening on port %d in %s mode.", 9000, app.get('env'));
 });
