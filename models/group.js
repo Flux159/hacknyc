@@ -8,8 +8,7 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 var GroupSchema = new Schema({
     users: [String],
     name: String,
-    items: [ObjectId],
-    messages: [ObjectId]
+    items: [ObjectId]
 });
 
 module.exports = mongoose.model('Group', GroupSchema);

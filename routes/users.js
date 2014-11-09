@@ -223,8 +223,7 @@ router.get('/auth/users', function (req, res) {
                 returnGroups.push({
                     users: group.users,
                     name: group.name,
-                    items: [],
-                    messages: []
+                    items: []
                 });
 
                 group.items.forEach(function (item) {
@@ -232,10 +231,14 @@ router.get('/auth/users', function (req, res) {
                     itemMap[item] = index;
                 });
 
-                group.messages.forEach(function (message) {
-                    messageIds.push(messages);
-                    messageMap[message] = index;
-                });
+
+                messageIds.push(group.name);
+                messageMap[group.name] = index;
+
+//                group.messages.forEach(function (message) {
+//                    messageIds.push(message);
+//                    messageMap[message] = index;
+//                });
 
             });
 
@@ -243,7 +246,7 @@ router.get('/auth/users', function (req, res) {
                 if (err) return res.status(500).json("Internal Server Error");
 
 
-                Message.find({_id: {$in: messageIds}}, function (err, messages) {
+                Message.find({group: {$in: messageIds}}, function (err, messages) {
                     if (err) return res.status(500).json("Internal Server Error");
 
                     items.forEach(function (item) {
