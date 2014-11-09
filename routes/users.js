@@ -206,7 +206,7 @@ router.get('/auth/users', function (req, res) {
         }
 
         //TODO: Get Groups
-        var groups = {};
+//        var groups = {};
 
         Group.find({_id: {$in: user.groups}}, function (err, groups) {
             if (err) {
