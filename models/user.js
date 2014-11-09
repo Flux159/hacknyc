@@ -9,6 +9,7 @@ var UserSchema = new Schema({
     fname: String,
     phone: String,
     email: String,
+    device_id: String,
     hashed_password: String,
     salt: String,
     groups: [ObjectId],

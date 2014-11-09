@@ -34,35 +34,39 @@ function encryptPassword(password, salt, callback) {
     });
 }
 
-router.post('/users/signup', function(req, res) {
+router.post('/users/signup', function (req, res) {
 
     //Username must be defined
-    if(req.body.username === null || req.body.username === undefined) {
+    if (req.body.username === null || req.body.username === undefined) {
         return res.status(500).json("Must supply username");
     }
 
     //Password must be defined
-    if(req.body.password === null || req.body.password === undefined) {
+    if (req.body.password === null || req.body.password === undefined) {
         return res.status(500).json("Must supply password");
     }
 
+    if (req.body.device_id === null || req.body.device_id === undefined) {
+        return res.status(500).json("Must supply device_id");
+    }
+
     //Password length must be at least 6 characters
-    if(req.body.password.length < 6) {
+    if (req.body.password.length < 6) {
         return res.status(500).json("Password length must be greater than or equal to 6 characters");
     }
 
-    User.findOne({username: String(req.body.username)}, function(err, user) {
-        if(err) return res.status(500).json("Internal Server Error");
-        if(user) {
+    User.findOne({username: String(req.body.username)}, function (err, user) {
+        if (err) return res.status(500).json("Internal Server Error");
+        if (user) {
             return res.status(500).json("Username already taken");
         }
 
-        encryptPassword(String(req.body.password), function(err, encryptedPasswordSalt) {
+        encryptPassword(String(req.body.password), function (err, encryptedPasswordSalt) {
 
-            var user = new User({_id: ObjectId(), username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt, groups: [], recents: []});
+            var user = new User({_id: ObjectId(), username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt, device_id: req.body.device_id, groups: [], recents: []});
 
-            user.save(function(err) {
-                if(err) {
+            user.save(function (err) {
+                if (err) {
                     console.log(err);
                     return res.status(500).json("Internal Server Error");
                 }
@@ -86,25 +90,25 @@ router.post('/users/signup', function(req, res) {
     });
 });
 
-router.post('/users/login', function(req, res) {
+router.post('/users/login', function (req, res) {
 
     //Username must be defined
-    if(req.body.username === null || req.body.username === undefined) {
+    if (req.body.username === null || req.body.username === undefined) {
         return res.status(500).json("Must supply username");
     }
 
     //Password must be defined
-    if(req.body.password === null || req.body.password === undefined) {
+    if (req.body.password === null || req.body.password === undefined) {
         return res.status(500).json("Must supply password");
     }
 
-    User.findOne({username: req.body.username}, function(err, user) {
-        if(err || !user) {
+    User.findOne({username: req.body.username}, function (err, user) {
+        if (err || !user) {
             return res.status(500).json("Invalid username or password");
         }
 
-        encryptPassword(req.body.password, user.salt, function(err, encryptedPasswordSalt) {
-            if(encryptedPasswordSalt.hashedPassword === user.hashed_password) {
+        encryptPassword(req.body.password, user.salt, function (err, encryptedPasswordSalt) {
+            if (encryptedPasswordSalt.hashedPassword === user.hashed_password) {
 
                 var profile = {
                     username: user.username
@@ -114,11 +118,11 @@ router.post('/users/login', function(req, res) {
 
                 //TODO: Get groups
 
-                var groups = {};
+//                var groups = {};
 
                 var returnUser = {
-                    username: user.username,
-                    groups: groups
+                    username: user.username
+//                    groups: groups
                 };
 
                 return res.status(200).json({token: token, user: returnUser});
@@ -194,22 +198,85 @@ router.post('/users/login', function(req, res) {
 //
 //                });
 
-router.get('/auth/users/:username', function(req, res) {
+router.get('/auth/users', function (req, res) {
 
-    User.findOne({username: req.user.username}, function(err, user) {
-        if(err || !user) {
+    User.findOne({username: req.user.username}, function (err, user) {
+        if (err || !user) {
             return res.status(500).json("Internal Server Error");
         }
 
         //TODO: Get Groups
         var groups = {};
 
-        var returnUser = {
-            username: user.username,
-            groups: groups
-        };
+        Group.find({_id: {$in: user.groups}}, function (err, groups) {
+            if (err) {
+                console.log(err);
+                return res.status(500).json("Internal Server Error");
+            }
 
-        return res.status(200).json({user: returnUser});
+            var returnGroups = [];
+            var itemIds = [];
+            var itemMap = {};
+            var messageIds = [];
+            var messageMap = {};
+            groups.forEach(function (group, index) {
+                returnGroups.push({
+                    users: group.users,
+                    name: group.name,
+                    items: [],
+                    messages: []
+                });
+
+                group.items.forEach(function (item) {
+                    itemIds.push(item);
+                    itemMap[item] = index;
+                });
+
+                group.messages.forEach(function (message) {
+                    messageIds.push(messages);
+                    messageMap[message] = index;
+                });
+
+            });
+
+            Item.find({_id: {$in: itemIds}}, function (err, items) {
+                if (err) return res.status(500).json("Internal Server Error");
+
+
+                Message.find({_id: {$in: messageIds}}, function (err, messages) {
+                    if (err) return res.status(500).json("Internal Server Error");
+
+                    items.forEach(function (item) {
+                        if (itemMap[item._id] !== undefined && itemMap[item._id] !== null) {
+                            returnGroups[itemMap[item._id]].items.push(item);
+                        }
+                    });
+
+                    messages.forEach(function (message) {
+                        if (messageMap[message._id] !== undefined && itemMap[message._id] !== null) {
+                            returnGroups[messageMap[message._id]].messages.push(message);
+                        }
+                    });
+
+                    var returnUser = {
+                        username: user.username,
+                        groups: returnGroups
+                    };
+
+                    return res.status(200).json({user: returnUser});
+
+                });
+
+            });
+
+        });
+
+//        var returnUser = {
+//            username: user.username,
+//            groups: groups
+//        };
+//
+//        return res.status(200).json({user: returnUser});
     });
 
 });
