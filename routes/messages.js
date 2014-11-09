@@ -23,7 +23,7 @@ router.post('/auth/messages', function(req, res) {
   }
 
   var message = new Message(messageType, username, item, group, new Date());
-  message.save(fucntion(err){
+  message.save(function (err) {
     if(err){
       return res.status(500).json("Failed to save message");
     }
