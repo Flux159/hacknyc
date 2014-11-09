@@ -4,6 +4,13 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 var User = require('../models/user');
+var Group = require('../models/group');
+var Item = require('../models/item');
+var Message = require('../models/message');
+
+var ObjectId = mongoose.Types.ObjectId;
+
+var crypto = require('crypto');
 
 var jwt = require('jsonwebtoken');
 var secret = process.env.SECRET || 'secret-shhh-12345';
@@ -52,7 +59,7 @@ router.post('/users/signup', function(req, res) {
 
         encryptPassword(String(req.body.password), function(err, encryptedPasswordSalt) {
 
-            var user = new user({username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt});
+            var user = new User({_id: ObjectId(), username: String(req.body.username), hashed_password: encryptedPasswordSalt.hashedPassword, salt: encryptedPasswordSalt.salt});
 
             user.save(function(err) {
                 if(err) {
@@ -66,14 +73,12 @@ router.post('/users/signup', function(req, res) {
 
                 var token = jwt.sign(profile, secret, {expiresInMinutes: expiry});
 
-                var groups = {};
-
                 var returnUser = {
-                    username: user.username,
-                    groups: groups
+                    username: user.username
                 };
 
                 return res.status(200).json({token: token, user: returnUser});
+
             });
 
         });
@@ -93,7 +98,7 @@ router.post('/users/login', function(req, res) {
         return res.status(500).json("Must supply password");
     }
 
-    User.findOne({username: req.body.username}, function(err, user) {
+    User.findOne({username: req.user.username}, function(err, user) {
         if(err || !user) {
             return res.status(500).json("Invalid username or password");
         }
@@ -125,6 +130,69 @@ router.post('/users/login', function(req, res) {
     });
 
 });
+
+//                Group.find({_id: user.groups}, function(err, groups) {
+//                    if(err) {
+//                        console.log(err);
+//                        return res.status(500).json("Internal Server Error");
+//                    }
+//
+//                    var returnGroups = [];
+//                    var itemIds = [];
+//                    var itemMap = {};
+//                    var messageIds = [];
+//                    var messageMap = {};
+//                    groups.forEach(function(group, index) {
+//                        returnGroups.push({
+//                            users: group.users,
+//                            name: group.name,
+//                            items: [],
+//                            messages: []
+//                        });
+//
+//                        group.items.forEach(function(item) {
+//                           itemIds.push(item);
+//                           itemMap[item] = index;
+//                        });
+//
+//                        group.messages.forEach(function(message) {
+//                            messageIds.push(messages);
+//                            messageMap[message] = index;
+//                        });
+//
+//                    });
+//
+//                    Item.find({_id: itemIds}, function(err, items) {
+//                        if(err) return res.status(500).json("Internal Server Error");
+//
+//
+//                        Message.find({_id: messageIds}, function(err, messages) {
+//                            if(err) return res.status(500).json("Internal Server Error");
+//
+//                            items.forEach(function(item) {
+//                                if(itemMap[item._id] !== undefined && itemMap[item._id] !== null) {
+//                                    returnGroups[itemMap[item._id]].items.push(item);
+//                                }
+//                            });
+//
+//                            messages.forEach(function(message) {
+//                                if(messageMap[message._id] !== undefined && itemMap[message._id] !== null) {
+//                                    returnGroups[messageMap[message._id]].messages.push(message);
+//                                }
+//                            });
+//
+//                            var returnUser = {
+//                                username: user.username,
+//                                groups: returnGroups
+//                            };
+//
+//                            return res.status(200).json({token: token, user: returnUser});
+//
+//                        });
+//
+//                    });
+//
+//                });
 
 router.get('/auth/users/:username', function(req, res) {
 
