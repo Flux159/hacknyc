@@ -198,7 +198,7 @@ router.post('/users/login', function (req, res) {
 //
 //                });
 
-router.get('/auth/users/:username', function (req, res) {
+router.get('/auth/users', function (req, res) {
 
     User.findOne({username: req.user.username}, function (err, user) {
         if (err || !user) {
@@ -208,8 +208,7 @@ router.get('/auth/users/:username', function (req, res) {
         //TODO: Get Groups
         var groups = {};
 
-
-        Group.find({_id: user.groups}, function (err, groups) {
+        Group.find({_id: {$in: user.groups}}, function (err, groups) {
             if (err) {
                 console.log(err);
                 return res.status(500).json("Internal Server Error");
@@ -240,11 +239,11 @@ router.get('/auth/users/:username', function (req, res) {
 
             });
 
-            Item.find({_id: itemIds}, function (err, items) {
+            Item.find({_id: {$in: itemIds}}, function (err, items) {
                 if (err) return res.status(500).json("Internal Server Error");
 
 
-                Message.find({_id: messageIds}, function (err, messages) {
+                Message.find({_id: {$in: messageIds}}, function (err, messages) {
                     if (err) return res.status(500).json("Internal Server Error");
 
                     items.forEach(function (item) {
@@ -264,7 +263,7 @@ router.get('/auth/users/:username', function (req, res) {
                         groups: returnGroups
                     };
 
-                    return res.status(200).json({token: token, user: returnUser});
+                    return res.status(200).json({user: returnUser});
 
                 });
 
