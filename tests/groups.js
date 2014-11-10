@@ -54,8 +54,8 @@ describe('Groups', function () {
                 .end(function(err, res) {
                     assert.ifError(err);
 
-                    console.log("Add group");
-                    console.log(res.body);
+//                    console.log("Add group");
+//                    console.log(res.body);
                     groupId = res.body.id;
 
                     done();
@@ -72,8 +72,9 @@ describe('Groups', function () {
                 .end(function(err, res) {
                     assert.ifError(err);
 
-                    console.log("Add user to group");
-                    console.log(res.body);
+//                    console.log("Add user to group");
+//                    console.log(res.body.users);
+                    assert.equal(res.body.users.length, 2);
 
                     done();
                 });
@@ -82,8 +83,34 @@ describe('Groups', function () {
         });
     });
 
+    describe('removeuser', function() {
+        it('Should remove a user from a group', function(done) {
+            request(server).delete('/auth/groups/' + groupId + '/remove_user/' + user2)
+                .set('Authorization', 'Bearer ' + token)
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(function(err, res) {
+                    assert.ifError(err);
+
+//                    console.log("Remove user from group");
+//                    console.log(res.body);
+                    assert.equal(res.body.users.length, 1);
+
+                    done();
+                });
+        });
+    });
+
+    describe('get group', function() {
+        it('Should get a groups data', function(done) {
+            done();
+        });
+    });
+
     describe('additem', function() {
         it('Should add an item successfully', function(done) {
+
+
             done();
         });
     });

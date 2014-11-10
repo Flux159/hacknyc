@@ -133,7 +133,7 @@ router.delete('/auth/groups/:id/remove_user/:username', function (req, res) {
                 res.status(500).json("Internal Server Error");
             }
             // Remove group from user.
-            User.findOne({_id: req.params.username}, function(err, user) {
+            User.findOne({username: req.params.username}, function(err, user) {
                 if(err) {
                     console.log(err);
                     res.status(500).json("Internal Server Error");
