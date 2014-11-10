@@ -11,6 +11,8 @@ var Item = require('../models/item');
 var request = require('supertest');
 
 var token;
+var groupId;
+var user2 = 'testing9';
 
 describe('Groups', function () {
 
@@ -28,7 +30,15 @@ describe('Groups', function () {
 
                         token = res.body.token;
 
-                        done();
+                        request(server).post('/users/signup')
+                            .send({'username': user2, 'password': "test123", device_id: '12345'})
+                            .expect('Content-Type', /json/)
+                            .expect(200)
+                            .end(function (err, res) {
+                                assert.ifError(err);
+
+                                done();
+                            });
                     });
             });
         });
@@ -44,25 +54,43 @@ describe('Groups', function () {
                 .end(function(err, res) {
                     assert.ifError(err);
 
+                    console.log("Add group");
+                    console.log(res.body);
+                    groupId = res.body.id;
+
+                    done();
+                });
+        });
+    });
+
+    describe('adduser', function() {
+        it('Should add a user successfully', function(done) {
+            request(server).get('/auth/groups/' + groupId + '/add_user/' + user2)
+                .set('Authorization', 'Bearer ' + token)
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(function(err, res) {
+                    assert.ifError(err);
+
+                    console.log("Add user to group");
                     console.log(res.body);
 
                     done();
                 });
 
-
-
 //            done();
-//            request(server).post('/users/signup')
-//                .send({'username': "testing1", 'password': "test123", device_id: '12345'})
-//                .expect('Content-Type', /json/)
-//                .expect(200)
-//                .end(function (err, res) {
-//                    assert.ifError(err);
-//
-//                    token = res.body.token;
-//
-//                    done();
-//                });
+        });
+    });
+
+    describe('additem', function() {
+        it('Should add an item successfully', function(done) {
+            done();
+        });
+    });
+
+    describe('deleteitem', function() {
+        it('Should delete an item successfully', function(done) {
+            done();
         });
     });
 

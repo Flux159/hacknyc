@@ -74,31 +74,31 @@ router.get('/auth/groups/:id/add_user/:username', function (req, res) {
         console.log("Adding user to group %s.", group.name);
 //        var full_group = helpers.buildGroupJson(group);
 
-        helpers.buildGroupJson(group, function(full_group) {
-            if(!full_group) {
+        group.users.push(req.params.username);
+        group.markModified('users');
+        group.save(function(err) {
+            if(err) {
+                console.log(err);
                 return res.status(500).json("Internal Server Error");
             }
 
-            helpers.addGroupToUser(req.params.username, group, function(success) {
-                if(!success) {
+            helpers.buildGroupJson(group, function(full_group) {
+                if(!full_group) {
                     return res.status(500).json("Internal Server Error");
                 }
 
-                return res.status(200).json(helpers.trimGroup(full_group));
+                helpers.addGroupToUser(req.params.username, group, function(success) {
+                    if(!success) {
+                        return res.status(500).json("Internal Server Error");
+                    }
+
+                    return res.status(200).json(helpers.trimGroup(full_group));
+
+                });
 
             });
 
         });
-//
-//        if (full_group === null) {
-//            return res.status(500).end();
-//        }
-
-
-//        if (!helpers.addGroupToUser(req.params.username, group)) {
-//            return res.status(500).end();
-//        }
-//        return res.status(200).json(helpers.trimGroup(group));
     });
 });
 
