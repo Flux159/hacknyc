@@ -10,6 +10,8 @@ var Message = require('../models/message');
 var request = require('supertest');
 
 var token;
+var group_id;
+var item_id;
 
 describe('Messages', function () {
 
@@ -25,24 +27,31 @@ describe('Messages', function () {
 
                     token = res.body.token;
 
-                    done();
+                    request(server).post('/auth/groups/create')
+                        .set('Authorization', 'Bearer ' + token)
+                        .send({'name': 'group7', 'users':['testuser7']})
+                        .end(function (err, res) {
+                            assert.ifError(err);
+                            group_id = res.body.id;
+                            item_id = res.body.items[0]._id;
+
+                            done();
+                        });
+
+                    
                 });
         });
     });
 
     describe('create', function () {
         it('Should create a message successfully', function (done) {
-
             request(server).post('/auth/messages')
                 .set('Authorization', 'Bearer ' + token)
-                .send({type: 'ASK', item: '', group: ''})
-//                .expect('Content-Type', /json/)
-//                .expect(200)
+                .send({'type': 'ASK', 'item': item_id, 'group': group_id})
+               .expect('Content-Type', /json/)
+               .expect(200)
                 .end(function(err, res) {
-//                    assert.ifError(err);
-
-//                    console.log(res.body);
-
+                    console.log(err);
                     done();
                 });
 
@@ -60,5 +69,4 @@ describe('Messages', function () {
 //                });
         });
     });
-
 });
