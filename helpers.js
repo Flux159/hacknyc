@@ -2,16 +2,6 @@ var User = require('./models/user');
 var Item = require('./models/item');
 var Message = require('./models/message');
 
-exports.trimGroup = function(group) {
-    return {
-        id: group._id,
-        name: group.name,
-        users: group.users,
-        items: group.items,
-        messages: group.messages
-    };
-};
-
 exports.addGroupToUser = function(user_name, group, callback) {
     // Add group to user record.
     User.findOne({username: user_name}, function(err, user) {
@@ -34,6 +24,14 @@ exports.addGroupToUser = function(user_name, group, callback) {
 };
 
 exports.buildGroupJson = function(group, callback) {
+    var returnGroup = {
+        'id': group._id,
+        'users': group.users,
+        'name': group.name,
+        'items': [],
+        'messages': []
+    };
+
     var itemIds = [];
     group.items.forEach(function (item) {
         itemIds.push(item);
@@ -45,17 +43,14 @@ exports.buildGroupJson = function(group, callback) {
             callback(null);
         }
 //        group.items = items;
-
-        var returnItems = [];
+        
         items.forEach(function(item) {
-            returnItems.push({
+            returnGroup.items.push({
                 title: item.title,
                 icon: item.icon,
                 chevin: item.chevin
             });
         });
-        group.items = returnItems;
-
 //        var messageIds = [];
 //        group.messages.forEach(function (message) {
 //            messageIds.push(message);
@@ -69,18 +64,15 @@ exports.buildGroupJson = function(group, callback) {
             }
 //            group.messages = messages;
 
-            var returnMessages = [];
             messages.forEach(function(message) {
-                returnMessages.push({
+                returnGroup.messages.push({
                     type: message.type,
                     user: message.user,
                     created_at: created_at
                 });
             });
 
-            group.messages = returnMessages;
-
-            callback(group);
+            callback(returnGroup);
 
         });
     });

@@ -58,14 +58,19 @@ router.post('/auth/groups/create', function (req, res) {
                     res.status(500).json("Internal Server Error");
                 }
                 // Return all item details.
-                newGroup.items = [beer, tp, tree];
-                return res.status(200).json(helpers.trimGroup(newGroup));
+                var returnGroup = {
+                    'id': newGroup._id,
+                    'users': newGroup.users,
+                    'name': newGroup.name,
+                    'items': [beer, tp, tree],
+                    'messages': []
+                }
+                return res.status(200).json(returnGroup);
 
             });
         });
 
     });
-
 });
 
 router.get('/auth/groups/:id/add_user/:username', function (req, res) {
@@ -92,7 +97,7 @@ router.get('/auth/groups/:id/add_user/:username', function (req, res) {
                         return res.status(500).json("Internal Server Error");
                     }
 
-                    return res.status(200).json(helpers.trimGroup(full_group));
+                    return res.status(200).json(full_group);
 
                 });
 
@@ -112,7 +117,7 @@ router.get('/auth/groups/:id', function (req, res) {
             if(!full_group) {
                 res.status(500).json("Internal Server Error");
             }
-            return res.status(200).json(helpers.trimGroup(full_group));
+            return res.status(200).json(full_group);
         });
     });
 });
@@ -151,7 +156,7 @@ router.delete('/auth/groups/:id/remove_user/:username', function (req, res) {
                         if(!full_group) {
                             return res.status(500).json("Internal Server Error");
                         }
-                        return res.status(200).json(helpers.trimGroup(full_group));
+                        return res.status(200).json(full_group);
                     });
                 });
             });
