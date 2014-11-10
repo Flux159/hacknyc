@@ -56,7 +56,7 @@ describe('Groups', function () {
 
 //                    console.log("Add group");
 //                    console.log(res.body);
-                    groupId = res.body.id;
+                    groupId = res.body._id;
 
                     done();
                 });

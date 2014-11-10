@@ -25,7 +25,7 @@ exports.addGroupToUser = function(user_name, group, callback) {
 
 exports.buildGroupJson = function(group, callback) {
     var returnGroup = {
-        'id': group._id,
+        '_id': group._id,
         'users': group.users,
         'name': group.name,
         'items': [],

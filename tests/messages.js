@@ -32,7 +32,7 @@ describe('Messages', function () {
                         .send({'name': 'group7', 'users':['testuser7']})
                         .end(function (err, res) {
                             assert.ifError(err);
-                            group_id = res.body.id;
+                            group_id = res.body._id;
                             item_id = res.body.items[0]._id;
 
                             done();

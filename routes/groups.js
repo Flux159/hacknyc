@@ -59,7 +59,7 @@ router.post('/auth/groups/create', function (req, res) {
                 }
                 // Return all item details.
                 var returnGroup = {
-                    'id': newGroup._id,
+                    '_id': newGroup._id,
                     'users': newGroup.users,
                     'name': newGroup.name,
                     'items': [beer, tp, tree],
