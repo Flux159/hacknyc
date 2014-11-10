@@ -1,4 +1,6 @@
 var User = require('./models/user');
+var Item = require('./models/item');
+var Message = require('./models/message');
 
 exports.trimGroup = function(group) {
     return {
@@ -59,8 +61,9 @@ exports.buildGroupJson = function(group, callback) {
 //            messageIds.push(message);
 //        });
 
-        Message.find({group: group.name}, function(err, messages) {
+        Message.find({group: group._id}, function(err, messages) {
             if(err) {
+                console.log("ERROR IN HERE");
                 console.log(err);
                 callback(null);
             }
