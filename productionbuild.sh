@@ -16,4 +16,4 @@ cd hackync
 npm install
 
 #Start node app on port 80:
-NODE_ENV=production node app.js
+sudo NODE_ENV=production PORT=80 node app.js
