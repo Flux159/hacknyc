@@ -66,5 +66,5 @@ var port = process.env.PORT || 9000;
 
 //Start server
 app.listen(port, function() {
-    console.log("Express server listening on port %d in %s mode.", 9000, app.get('env'));
+    console.log("Express server listening on port %d in %s mode.", port, app.get('env'));
 });
